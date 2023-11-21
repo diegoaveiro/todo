@@ -72,21 +72,60 @@
     </div>
 
     <script>
-      function addTask() {
-    var taskInput = document.getElementById("taskInput");
-    var taskList = document.getElementById("taskList");
-
-    if (taskInput.value !== "") {
-        var li = document.createElement("li");
-        li.innerHTML = taskInput.value + ' <button class="delete-btn" onclick="deleteTask(this)">Excluir</button>';
-        taskList.appendChild(li);
-        taskInput.value = "";
+    // Função para obter as tarefas armazenadas no localStorage
+    function getStoredTasks() {
+        var storedTasks = localStorage.getItem("tasks");
+        return storedTasks ? JSON.parse(storedTasks) : [];
     }
+
+    // Função para salvar as tarefas no localStorage
+    function saveTasks(tasks) {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function addTask() {
+        var taskInput = document.getElementById("taskInput");
+        var taskList = document.getElementById("taskList");
+
+        if (taskInput.value !== "") {
+            var li = document.createElement("li");
+            li.innerHTML = taskInput.value + ' <button class="delete-btn" onclick="deleteTask(this)">Excluir</button>';
+            taskList.appendChild(li);
+
+            // Adiciona a nova tarefa ao array de tarefas
+            var tasks = getStoredTasks();
+            tasks.push(taskInput.value);
+            saveTasks(tasks);
+
+            taskInput.value = "";
+        }
     }
 
     function deleteTask(element) {
+        var taskText = element.parentNode.firstChild.textContent.trim();
+
+        // Remove a tarefa do array de tarefas
+        var tasks = getStoredTasks();
+        var index = tasks.indexOf(taskText);
+        if (index !== -1) {
+            tasks.splice(index, 1);
+            saveTasks(tasks);
+        }
+
         element.parentNode.remove();
     }
+
+    // Carrega as tarefas armazenadas ao carregar a página
+    document.addEventListener("DOMContentLoaded", function() {
+        var tasks = getStoredTasks();
+        var taskList = document.getElementById("taskList");
+
+        tasks.forEach(function(task) {
+            var li = document.createElement("li");
+            li.innerHTML = task + ' <button class="delete-btn" onclick="deleteTask(this)">Excluir</button>';
+            taskList.appendChild(li);
+        });
+    });
 
     // Adiciona um evento para detectar a tecla "Enter" no campo de input
     document.getElementById("taskInput").addEventListener("keyup", function(event) {
